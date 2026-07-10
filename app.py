@@ -13,6 +13,8 @@ from database import (
 )
 from scraper import run_scraper
 from digest import send_digest
+from database import init_db
+init_db()
 
 logging.basicConfig(
     level=logging.INFO,
