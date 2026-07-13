@@ -742,7 +742,7 @@
           </div>
           <div class="card-actions">
             ${!a.is_read ? `<button class="action-btn" onclick="markRead(${a.id})">Mark read</button>` : ''}
-            <button class="action-btn" onclick="addToPipelineFromArticle(${JSON.stringify(escapeHtml(a.title))}, ${JSON.stringify(escapeHtml(a.url))})">+ Pipeline</button>
+            <button class="action-btn" data-title="${escapeHtml(a.title)}" data-url="${escapeHtml(a.url)}" onclick="addToPipelineFromArticle(this)">+ Pipeline</button>
             <button class="action-btn dismiss" onclick="dismiss(${a.id})">Dismiss</button>
           </div>
         </div>
@@ -1179,12 +1179,13 @@
     loadPipeline();
   }
 
-  function addToPipelineFromArticle(title, url) {
-    // Pre-fill company name from article title (first 60 chars), and source URL
+  function addToPipelineFromArticle(btn) {
+    const title = btn.dataset.title || '';
+    const url = btn.dataset.url || '';
     document.getElementById('pm-company-id').value = '';
     document.getElementById('pipeline-modal-title').textContent = 'Add Company';
     document.getElementById('pm-delete-btn').style.display = 'none';
-    document.getElementById('pm-name').value = title.slice(0, 60);
+    document.getElementById('pm-name').value = title.slice(0, 80);
     ['pm-ticker','pm-exchange','pm-commodity','pm-deal-type','pm-deal-size','pm-contacts','pm-last-contact','pm-notes'].forEach(id => {
       document.getElementById(id).value = '';
     });
