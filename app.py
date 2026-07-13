@@ -10,11 +10,11 @@ from database import (
     get_keywords, add_keyword, delete_keyword,
     get_watchlist_db, add_watchlist_entry, delete_watchlist_entry,
     get_watchlist_for_scraper,
+    get_pipeline, add_pipeline_company, update_pipeline_company, delete_pipeline_company,
+    PIPELINE_STAGES,
 )
 from scraper import run_scraper
 from digest import send_digest
-from database import init_db
-init_db()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -223,6 +223,48 @@ def api_add_watchlist_keyword():
 @app.route("/api/watchlist-keywords/<int:entry_id>", methods=["DELETE"])
 def api_delete_watchlist_keyword(entry_id):
     delete_watchlist_entry(entry_id)
+    return jsonify({"ok": True})
+
+
+# ── Pipeline routes ───────────────────────────────────────────────────────────
+
+@app.route("/api/pipeline", methods=["GET"])
+def api_get_pipeline():
+    return jsonify({"companies": get_pipeline(), "stages": PIPELINE_STAGES})
+
+
+@app.route("/api/pipeline", methods=["POST"])
+def api_add_pipeline():
+    data = request.get_json()
+    company_name = (data.get("company_name") or "").strip()
+    if not company_name:
+        return jsonify({"ok": False, "error": "company_name required"}), 400
+    new_id = add_pipeline_company(
+        company_name=company_name,
+        ticker=data.get("ticker", ""),
+        exchange=data.get("exchange", ""),
+        commodity=data.get("commodity", ""),
+        stage=data.get("stage", "Identified"),
+        deal_type=data.get("deal_type", ""),
+        estimated_deal_size=data.get("estimated_deal_size", ""),
+        key_contacts=data.get("key_contacts", ""),
+        notes=data.get("notes", ""),
+        last_contact_date=data.get("last_contact_date", ""),
+        source_article_url=data.get("source_article_url", ""),
+    )
+    return jsonify({"ok": True, "id": new_id})
+
+
+@app.route("/api/pipeline/<int:company_id>", methods=["PATCH"])
+def api_update_pipeline(company_id):
+    data = request.get_json()
+    update_pipeline_company(company_id, **data)
+    return jsonify({"ok": True})
+
+
+@app.route("/api/pipeline/<int:company_id>", methods=["DELETE"])
+def api_delete_pipeline(company_id):
+    delete_pipeline_company(company_id)
     return jsonify({"ok": True})
 
 

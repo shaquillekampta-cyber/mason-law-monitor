@@ -71,6 +71,25 @@ def init_db():
             )
         """)
 
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS pipeline (
+                id SERIAL PRIMARY KEY,
+                company_name TEXT NOT NULL,
+                ticker TEXT,
+                exchange TEXT,
+                commodity TEXT,
+                stage TEXT NOT NULL DEFAULT 'Identified',
+                deal_type TEXT,
+                estimated_deal_size TEXT,
+                key_contacts TEXT,
+                notes TEXT,
+                last_contact_date TEXT,
+                source_article_url TEXT,
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
+
         # Seed watchlist from config if empty
         cur.execute("SELECT COUNT(*) FROM watchlist")
         count = cur.fetchone()[0]
@@ -269,3 +288,60 @@ def get_watchlist_for_scraper():
             if pattern not in existing_patterns:
                 entries.append({"label": label, "pattern": pattern, "group": group_name})
     return entries
+
+
+# ── Pipeline management ───────────────────────────────────────────────────────
+
+PIPELINE_STAGES = ["Identified", "Researched", "Contacted", "Active Mandate"]
+
+
+def get_pipeline():
+    with get_conn() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute("SELECT * FROM pipeline ORDER BY updated_at DESC")
+        return [dict(row) for row in cur.fetchall()]
+
+
+def add_pipeline_company(company_name, ticker="", exchange="", commodity="",
+                          stage="Identified", deal_type="", estimated_deal_size="",
+                          key_contacts="", notes="", last_contact_date="",
+                          source_article_url=""):
+    try:
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO pipeline
+                    (company_name, ticker, exchange, commodity, stage, deal_type,
+                     estimated_deal_size, key_contacts, notes, last_contact_date, source_article_url)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
+            """, (company_name, ticker, exchange, commodity, stage, deal_type,
+                  estimated_deal_size, key_contacts, notes, last_contact_date, source_article_url))
+            return cur.fetchone()[0]
+    except Exception as e:
+        logger.error("Failed to add pipeline company: %s", e)
+        return None
+
+
+def update_pipeline_company(company_id, **fields):
+    allowed = {"company_name", "ticker", "exchange", "commodity", "stage", "deal_type",
+               "estimated_deal_size", "key_contacts", "notes", "last_contact_date"}
+    updates = {k: v for k, v in fields.items() if k in allowed}
+    if not updates:
+        return
+    updates["updated_at"] = "NOW()"
+    set_clause = ", ".join(
+        f"{k} = NOW()" if v == "NOW()" else f"{k} = %s"
+        for k, v in updates.items()
+    )
+    values = [v for v in updates.values() if v != "NOW()"]
+    values.append(company_id)
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(f"UPDATE pipeline SET {set_clause} WHERE id = %s", values)
+
+
+def delete_pipeline_company(company_id):
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM pipeline WHERE id = %s", (company_id,))
