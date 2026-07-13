@@ -12,6 +12,8 @@ from database import (
     get_watchlist_for_scraper,
     get_pipeline, add_pipeline_company, update_pipeline_company, delete_pipeline_company,
     PIPELINE_STAGES,
+    get_alerts, add_alert, update_alert, delete_alert,
+    check_new_articles_against_alerts, get_article_alert_names,
 )
 from scraper import run_scraper
 from digest import send_digest
@@ -58,6 +60,68 @@ def find_matched_keywords(article):
     return matched
 
 
+def send_alert_emails(matches):
+    """Send one email per alert that fired, listing all matching articles."""
+    import smtplib, os
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    from collections import defaultdict
+
+    email_from = os.environ.get("DIGEST_EMAIL_FROM", "")
+    email_to   = os.environ.get("DIGEST_EMAIL_TO", "")
+    email_pass = os.environ.get("DIGEST_EMAIL_PASS", "")
+    if not all([email_from, email_to, email_pass]):
+        logger.warning("Alert email skipped — email env vars not set")
+        return
+
+    # Group matches by alert
+    by_alert = defaultdict(list)
+    for alert, article in matches:
+        by_alert[alert["name"]].append(article)
+
+    for alert_name, articles in by_alert.items():
+        try:
+            subject = f"⚡ Deal Alert: {alert_name} — {len(articles)} new article{'s' if len(articles) > 1 else ''}"
+            rows = ""
+            for a in articles:
+                score = a.get("relevance_score", 0)
+                rows += f"""
+                <tr>
+                  <td style="padding:12px 0;border-bottom:1px solid #2a3347;">
+                    <a href="{a['url']}" style="color:#3b82f6;font-size:14px;font-weight:600;text-decoration:none;">{a['title']}</a><br>
+                    <span style="color:#8899b4;font-size:12px;">{a.get('source','')} · {a.get('practice_area','')} · Score: {score:.1f}</span>
+                    {f'<p style="color:#cbd5e1;font-size:12px;margin:6px 0 0;">{a["summary"][:200]}…</p>' if a.get('summary') else ''}
+                  </td>
+                </tr>"""
+
+            html = f"""
+            <html><body style="background:#0f1117;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:32px;">
+              <div style="max-width:600px;margin:0 auto;">
+                <div style="background:#1e2535;border:1px solid #2a3347;border-radius:10px;padding:24px;">
+                  <h2 style="color:#f59e0b;margin:0 0 4px;">⚡ Deal Alert Triggered</h2>
+                  <p style="color:#8899b4;font-size:13px;margin:0 0 20px;">Alert: <strong style="color:#e2e8f0;">{alert_name}</strong></p>
+                  <table style="width:100%;border-collapse:collapse;">{rows}</table>
+                  <p style="color:#8899b4;font-size:11px;margin:20px 0 0;">
+                    View full dashboard → <a href="https://mason-law-monitor.onrender.com" style="color:#3b82f6;">mason-law-monitor.onrender.com</a>
+                  </p>
+                </div>
+              </div>
+            </body></html>"""
+
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = email_from
+            msg["To"] = email_to
+            msg.attach(MIMEText(html, "html"))
+
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+                server.login(email_from, email_pass)
+                server.sendmail(email_from, email_to, msg.as_string())
+            logger.info("Alert email sent for: %s (%d articles)", alert_name, len(articles))
+        except Exception as e:
+            logger.error("Failed to send alert email for %s: %s", alert_name, e)
+
+
 def scheduled_scrape():
     global _scraping
     if _scraping:
@@ -66,6 +130,13 @@ def scheduled_scrape():
     _scraping = True
     try:
         run_scraper()
+        # Check alerts after every scrape
+        matches = check_new_articles_against_alerts()
+        if matches:
+            logger.info("Alert check: %d new match(es) found", len(matches))
+            threading.Thread(target=send_alert_emails, args=(matches,), daemon=True).start()
+        else:
+            logger.info("Alert check: no new matches")
     finally:
         _scraping = False
 
@@ -90,8 +161,10 @@ def api_articles():
         include_dismissed=include_dismissed,
         sort=sort,
     )
+    alert_map = get_article_alert_names()
     for a in articles:
         a['matched_keywords'] = find_matched_keywords(a)
+        a['alert_names'] = alert_map.get(a['id'], [])
     last_fetch = get_last_fetch_time()
     stats = get_stats()
 
@@ -223,6 +296,41 @@ def api_add_watchlist_keyword():
 @app.route("/api/watchlist-keywords/<int:entry_id>", methods=["DELETE"])
 def api_delete_watchlist_keyword(entry_id):
     delete_watchlist_entry(entry_id)
+    return jsonify({"ok": True})
+
+
+# ── Alert routes ─────────────────────────────────────────────────────────────
+
+@app.route("/api/alerts", methods=["GET"])
+def api_get_alerts():
+    return jsonify(get_alerts())
+
+
+@app.route("/api/alerts", methods=["POST"])
+def api_add_alert():
+    data = request.get_json()
+    name = (data.get("name") or "").strip()
+    if not name:
+        return jsonify({"ok": False, "error": "name required"}), 400
+    new_id = add_alert(
+        name=name,
+        keywords=data.get("keywords", ""),
+        practice_area=data.get("practice_area", "Any"),
+        min_score=float(data.get("min_score", 5)),
+    )
+    return jsonify({"ok": True, "id": new_id})
+
+
+@app.route("/api/alerts/<int:alert_id>", methods=["PATCH"])
+def api_update_alert(alert_id):
+    data = request.get_json()
+    update_alert(alert_id, **data)
+    return jsonify({"ok": True})
+
+
+@app.route("/api/alerts/<int:alert_id>", methods=["DELETE"])
+def api_delete_alert(alert_id):
+    delete_alert(alert_id)
     return jsonify({"ok": True})
 
 

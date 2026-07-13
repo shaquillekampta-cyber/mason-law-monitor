@@ -405,6 +405,31 @@
     border-radius: 7px; padding: 10px 14px; margin-bottom: 16px; line-height: 1.5;
   }
 
+  /* ALERT BADGE */
+  .alert-badge-row { display: flex; flex-wrap: wrap; gap: 4px; }
+  .alert-badge {
+    font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px;
+    background: rgba(245,158,11,0.15); color: #fbbf24;
+    border: 1px solid rgba(245,158,11,0.4); letter-spacing: 0.2px;
+  }
+  .article-card.alert-hit { border-color: rgba(245,158,11,0.4); }
+  .article-card.alert-hit:hover { border-color: rgba(245,158,11,0.65); }
+
+  /* ALERT TOGGLE */
+  .alert-toggle { display: flex; align-items: center; gap: 8px; }
+  .toggle-switch {
+    position: relative; width: 36px; height: 20px;
+    background: var(--border); border-radius: 10px; cursor: pointer;
+    transition: background 0.2s; flex-shrink: 0;
+  }
+  .toggle-switch.on { background: var(--accent); }
+  .toggle-switch::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 14px; height: 14px; background: #fff; border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .toggle-switch.on::after { transform: translateX(16px); }
+
   /* SCROLLBAR */
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -607,6 +632,7 @@
     <div class="modal-tabs">
       <button class="modal-tab active" onclick="switchTab(this, 'tab-keywords')">Practice Area Keywords</button>
       <button class="modal-tab" onclick="switchTab(this, 'tab-watchlist')">Watchlist</button>
+      <button class="modal-tab" onclick="switchTab(this, 'tab-alerts'); loadAlerts()">⚡ Deal Alerts</button>
     </div>
 
     <div class="modal-body">
@@ -646,6 +672,32 @@
           <button onclick="addWatchlistEntry()">+ Add</button>
         </div>
         <div id="watchlist-list"></div>
+      </div>
+
+      <!-- ALERTS TAB -->
+      <div id="tab-alerts" class="tab-panel">
+        <p class="settings-note">
+          Create named alerts. After every hourly scrape, new articles are checked against your alerts —
+          matches get an <strong>⚡</strong> badge and trigger an instant email.
+          <br><strong>Keywords:</strong> comma-separated, any one must match. Leave blank to match all.
+        </p>
+        <div class="add-form" style="flex-wrap:wrap;gap:8px;">
+          <input id="al-name" type="text" placeholder="Alert name (e.g. Gold M&A)" style="flex:2;min-width:140px;" />
+          <input id="al-keywords" type="text" placeholder="Keywords (e.g. acquisition, merger, takeover)" style="flex:3;min-width:200px;" />
+          <select id="al-area" style="flex:1;min-width:120px;">
+            <option value="Any">Any area</option>
+            <option value="Mining &amp; Resources">Mining</option>
+            <option value="M&amp;A/Corporate">M&amp;A</option>
+            <option value="Securities &amp; Capital Markets">Securities</option>
+          </select>
+          <select id="al-score" style="flex:0 0 auto;">
+            <option value="3">Score 3+</option>
+            <option value="5" selected>Score 5+</option>
+            <option value="7">Score 7+</option>
+          </select>
+          <button onclick="addAlert()">+ Add Alert</button>
+        </div>
+        <div id="alerts-list"></div>
       </div>
 
     </div>
@@ -701,10 +753,12 @@
   function renderArticle(a) {
     const scoreC = scoreClass(a.relevance_score);
     const isWatchlistHit = a.watchlist_triggers && a.watchlist_triggers.length;
+    const isAlertHit = a.alert_names && a.alert_names.length;
     const readClass = a.is_read ? ' read' : '';
     const watchlistClass = isWatchlistHit ? ' watchlist-hit' : '';
+    const alertClass = isAlertHit ? ' alert-hit' : '';
     return `
-      <div class="article-card${readClass}${watchlistClass}" id="card-${a.id}">
+      <div class="article-card${readClass}${watchlistClass}${alertClass}" id="card-${a.id}">
         <div class="card-top">
           <div class="card-meta">
             <span class="source-tag">${escapeHtml(a.source || '')}</span>
@@ -718,6 +772,13 @@
           </a>
         </div>
         ${a.summary ? `<div class="card-summary">${escapeHtml(a.summary)}</div>` : ''}
+        ${isAlertHit ? `
+        <div>
+          <div class="keyword-tags-label" style="color:#fbbf24;">⚡ Deal Alert triggered</div>
+          <div class="alert-badge-row">
+            ${a.alert_names.map(n => `<span class="alert-badge">${escapeHtml(n)}</span>`).join('')}
+          </div>
+        </div>` : ''}
         ${isWatchlistHit ? `
         <div>
           <div class="keyword-tags-label" style="color:#f59e0b;">★ Watchlist trigger</div>
@@ -907,6 +968,7 @@
     document.getElementById('settings-overlay').classList.add('visible');
     loadKeywords();
     loadWatchlistEntries();
+    loadAlerts();
   }
 
   function closeSettings() {
@@ -1033,6 +1095,72 @@
     document.getElementById('kw-input').addEventListener('keydown', e => { if (e.key === 'Enter') addKeyword(); });
     document.getElementById('wl-pattern').addEventListener('keydown', e => { if (e.key === 'Enter') addWatchlistEntry(); });
   });
+
+  // ── Alerts ────────────────────────────────────────────────────────────────
+
+  async function loadAlerts() {
+    const res = await fetch('/api/alerts');
+    const alerts = await res.json();
+    const container = document.getElementById('alerts-list');
+    if (!alerts.length) {
+      container.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:6px 0;">No alerts yet. Add one above.</div>';
+      return;
+    }
+    container.innerHTML = alerts.map(al => {
+      const paLabel = al.practice_area === 'Any' ? 'Any area' : al.practice_area;
+      const kwLabel = al.keywords ? al.keywords : '<em style="color:var(--text-muted)">all articles</em>';
+      return `<div class="kw-item" style="flex-wrap:wrap;gap:8px;align-items:flex-start;">
+        <div style="flex:1;min-width:200px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <div class="alert-toggle">
+              <div class="toggle-switch ${al.active ? 'on' : ''}" onclick="toggleAlert(${al.id}, ${!al.active})" title="${al.active ? 'Active — click to pause' : 'Paused — click to enable'}"></div>
+            </div>
+            <strong style="font-size:13px;">${escapeHtml(al.name)}</strong>
+            <span class="alert-badge" style="font-size:9px;">Score ${al.min_score}+</span>
+            <span style="font-size:10px;color:var(--text-muted);">${escapeHtml(paLabel)}</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);">Keywords: ${kwLabel}</div>
+        </div>
+        <button class="kw-delete" onclick="deleteAlert(${al.id})" title="Delete alert">×</button>
+      </div>`;
+    }).join('');
+  }
+
+  async function addAlert() {
+    const name = document.getElementById('al-name').value.trim();
+    const keywords = document.getElementById('al-keywords').value.trim();
+    const practice_area = document.getElementById('al-area').value;
+    const min_score = document.getElementById('al-score').value;
+    if (!name) { alert('Alert name is required.'); return; }
+    const res = await fetch('/api/alerts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, keywords, practice_area, min_score: parseFloat(min_score) }),
+    });
+    if (res.ok) {
+      document.getElementById('al-name').value = '';
+      document.getElementById('al-keywords').value = '';
+      loadAlerts();
+    } else {
+      const d = await res.json();
+      alert(d.error || 'Failed to add alert');
+    }
+  }
+
+  async function toggleAlert(id, active) {
+    await fetch(`/api/alerts/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ active }),
+    });
+    loadAlerts();
+  }
+
+  async function deleteAlert(id) {
+    if (!confirm('Delete this alert?')) return;
+    await fetch(`/api/alerts/${id}`, { method: 'DELETE' });
+    loadAlerts();
+  }
 
   // ── Pipeline ───────────────────────────────────────────────────────────────
 

@@ -90,6 +90,28 @@ def init_db():
             )
         """)
 
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS alerts (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                keywords TEXT DEFAULT '',
+                practice_area TEXT DEFAULT 'Any',
+                min_score REAL DEFAULT 5,
+                active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
+
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS alert_matches (
+                id SERIAL PRIMARY KEY,
+                alert_id INTEGER REFERENCES alerts(id) ON DELETE CASCADE,
+                article_id INTEGER REFERENCES articles(id) ON DELETE CASCADE,
+                matched_at TIMESTAMP DEFAULT NOW(),
+                UNIQUE(alert_id, article_id)
+            )
+        """)
+
         # Seed watchlist from config if empty
         cur.execute("SELECT COUNT(*) FROM watchlist")
         count = cur.fetchone()[0]
@@ -345,3 +367,125 @@ def delete_pipeline_company(company_id):
     with get_conn() as conn:
         cur = conn.cursor()
         cur.execute("DELETE FROM pipeline WHERE id = %s", (company_id,))
+
+
+# ── Alert management ──────────────────────────────────────────────────────────
+
+def get_alerts():
+    with get_conn() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute("SELECT * FROM alerts ORDER BY created_at DESC")
+        return [dict(row) for row in cur.fetchall()]
+
+
+def add_alert(name, keywords="", practice_area="Any", min_score=5.0):
+    try:
+        with get_conn() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                """INSERT INTO alerts (name, keywords, practice_area, min_score)
+                   VALUES (%s, %s, %s, %s) RETURNING id""",
+                (name.strip(), keywords.strip().lower(), practice_area, float(min_score)),
+            )
+            return cur.fetchone()[0]
+    except Exception as e:
+        logger.error("Failed to add alert: %s", e)
+        return None
+
+
+def update_alert(alert_id, **fields):
+    allowed = {"name", "keywords", "practice_area", "min_score", "active"}
+    updates = {k: v for k, v in fields.items() if k in allowed}
+    if not updates:
+        return
+    set_clause = ", ".join(f"{k} = %s" for k in updates)
+    values = list(updates.values()) + [alert_id]
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(f"UPDATE alerts SET {set_clause} WHERE id = %s", values)
+
+
+def delete_alert(alert_id):
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM alerts WHERE id = %s", (alert_id,))
+
+
+def get_article_alert_names():
+    """Return {article_id: [alert_name, ...]} for all alert matches."""
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT am.article_id, a.name
+            FROM alert_matches am
+            JOIN alerts a ON a.id = am.alert_id
+            ORDER BY am.matched_at DESC
+        """)
+        result = {}
+        for article_id, alert_name in cur.fetchall():
+            result.setdefault(article_id, []).append(alert_name)
+        return result
+
+
+def check_new_articles_against_alerts():
+    """
+    Check articles created in the last 2 hours against all active alerts.
+    Returns list of (alert_dict, article_dict) new matches.
+    """
+    new_matches = []
+    try:
+        with get_conn() as conn:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            # Get active alerts
+            cur.execute("SELECT * FROM alerts WHERE active = TRUE")
+            alerts = [dict(r) for r in cur.fetchall()]
+            if not alerts:
+                return []
+
+            # Get articles from the last 2 hours not already matched
+            cur.execute("""
+                SELECT a.* FROM articles a
+                WHERE a.created_at >= NOW() - INTERVAL '2 hours'
+                  AND a.is_dismissed = 0
+            """)
+            recent_articles = [dict(r) for r in cur.fetchall()]
+            if not recent_articles:
+                return []
+
+            for alert in alerts:
+                kws = [k.strip() for k in alert["keywords"].split(",") if k.strip()]
+                pa = alert["practice_area"]
+                min_score = float(alert["min_score"])
+
+                for article in recent_articles:
+                    # Score filter
+                    if article["relevance_score"] < min_score:
+                        continue
+                    # Practice area filter
+                    if pa and pa != "Any" and article.get("practice_area") != pa:
+                        continue
+                    # Keyword filter — at least one keyword must match
+                    if kws:
+                        text = f"{article['title']} {article.get('summary') or ''}".lower()
+                        if not any(kw in text for kw in kws):
+                            continue
+
+                    # Try to insert match (skip if already exists)
+                    try:
+                        cur2 = conn.cursor()
+                        cur2.execute(
+                            """INSERT INTO alert_matches (alert_id, article_id)
+                               VALUES (%s, %s) ON CONFLICT DO NOTHING RETURNING id""",
+                            (alert["id"], article["id"]),
+                        )
+                        if cur2.fetchone():  # only new matches return a row
+                            new_matches.append((alert, article))
+                    except Exception:
+                        pass
+
+            conn.commit()
+    except Exception as e:
+        logger.error("Alert check failed: %s", e)
+
+    return new_matches
