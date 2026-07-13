@@ -112,7 +112,7 @@ def url_exists(url):
 
 
 def get_articles(practice_area=None, min_score=0, search=None, include_dismissed=False, sort="score"):
-    query = "SELECT * FROM articles WHERE published_at >= NOW() - INTERVAL '30 days'"
+    query = "SELECT * FROM articles WHERE created_at >= NOW() - INTERVAL '30 days'"
     params = []
 
     if not include_dismissed:
