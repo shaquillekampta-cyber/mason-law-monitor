@@ -26,6 +26,9 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
+# Run init_db at module level so gunicorn creates all tables on startup
+init_db()
+
 _scrape_lock = threading.Lock()
 _scraping = False
 
@@ -377,8 +380,6 @@ def api_delete_pipeline(company_id):
 
 
 if __name__ == "__main__":
-    init_db()
-
     scheduler = BackgroundScheduler()
     scheduler.add_job(
         scheduled_scrape,
