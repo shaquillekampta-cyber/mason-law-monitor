@@ -33,10 +33,10 @@ _scrape_lock = threading.Lock()
 _scraping = False
 
 
-def find_watchlist_triggers(article):
+def find_watchlist_triggers(article, watchlist):
+    """Pass watchlist in so it's fetched once per request, not per article."""
     text = f"{article.get('title', '')} {article.get('summary', '')}".lower()
     triggered = []
-    watchlist = get_watchlist_for_scraper()
     for kw in watchlist:
         pattern = kw["pattern"]
         if isinstance(pattern, tuple):
@@ -48,10 +48,10 @@ def find_watchlist_triggers(article):
     return triggered
 
 
-def find_matched_keywords(article):
-    from database import get_all_keywords_for_scraper
+def find_matched_keywords(article, all_keywords):
+    """Pass all_keywords in so it's fetched once per request, not per article."""
     text = f"{article.get('title', '')} {article.get('summary', '')}".lower()
-    keywords = get_all_keywords_for_scraper().get(article.get('practice_area', ''), [])
+    keywords = all_keywords.get(article.get('practice_area', ''), [])
     matched = []
     for kw in keywords:
         if isinstance(kw, tuple):
@@ -164,9 +164,12 @@ def api_articles():
         include_dismissed=include_dismissed,
         sort=sort,
     )
+    # Fetch these once per request, not once per article
+    from database import get_all_keywords_for_scraper
+    all_keywords = get_all_keywords_for_scraper()
     alert_map = get_article_alert_names()
     for a in articles:
-        a['matched_keywords'] = find_matched_keywords(a)
+        a['matched_keywords'] = find_matched_keywords(a, all_keywords)
         a['alert_names'] = alert_map.get(a['id'], [])
     last_fetch = get_last_fetch_time()
     stats = get_stats()
@@ -193,10 +196,10 @@ def api_watchlist():
         sort=sort,
     )
 
-    watchlist = get_watchlist_for_scraper()
+    watchlist = get_watchlist_for_scraper()  # fetched once
     result = []
     for a in articles:
-        triggers = find_watchlist_triggers(a)
+        triggers = find_watchlist_triggers(a, watchlist)
         if triggers:
             a["watchlist_triggers"] = triggers
             result.append(a)
