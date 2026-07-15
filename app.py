@@ -14,6 +14,8 @@ from database import (
     PIPELINE_STAGES,
     get_alerts, add_alert, update_alert, delete_alert,
     check_new_articles_against_alerts, get_article_alert_names,
+    get_companies, get_company, add_company, update_company, delete_company,
+    get_related_articles,
 )
 from scraper import run_scraper
 from digest import send_digest
@@ -380,6 +382,143 @@ def api_update_pipeline(company_id):
 def api_delete_pipeline(company_id):
     delete_pipeline_company(company_id)
     return jsonify({"ok": True})
+
+
+# ── Company profile routes ────────────────────────────────────────────────────
+
+@app.route("/api/companies", methods=["GET"])
+def api_get_companies():
+    search = request.args.get("search", "").strip() or None
+    commodity = request.args.get("commodity", "").strip() or None
+    return jsonify(get_companies(search=search, commodity=commodity))
+
+
+@app.route("/api/companies/<int:company_id>", methods=["GET"])
+def api_get_company(company_id):
+    company = get_company(company_id)
+    if not company:
+        return jsonify({"error": "Not found"}), 404
+    company["related_articles"] = get_related_articles(company["name"], company.get("ticker", ""))
+    return jsonify(company)
+
+
+@app.route("/api/companies", methods=["POST"])
+def api_add_company():
+    data = request.get_json()
+    name = (data.get("name") or "").strip()
+    if not name:
+        return jsonify({"ok": False, "error": "name required"}), 400
+    new_id = add_company(
+        name=name,
+        ticker=data.get("ticker", ""),
+        exchange=data.get("exchange", ""),
+        market_cap=data.get("market_cap", ""),
+        province=data.get("province", ""),
+        executives=data.get("executives", ""),
+        board_members=data.get("board_members", ""),
+        legal_counsel=data.get("legal_counsel", ""),
+        projects=data.get("projects", ""),
+        commodity=data.get("commodity", ""),
+        notes=data.get("notes", ""),
+    )
+    return jsonify({"ok": True, "id": new_id})
+
+
+@app.route("/api/companies/<int:company_id>", methods=["PATCH"])
+def api_update_company(company_id):
+    data = request.get_json()
+    update_company(company_id, **data)
+    return jsonify({"ok": True})
+
+
+@app.route("/api/companies/<int:company_id>", methods=["DELETE"])
+def api_delete_company(company_id):
+    delete_company(company_id)
+    return jsonify({"ok": True})
+
+
+# ── AI Email Composer ─────────────────────────────────────────────────────────
+
+@app.route("/api/compose-email", methods=["POST"])
+def api_compose_email():
+    import anthropic, os
+    data = request.get_json()
+    company_id = data.get("company_id")
+    email_type = data.get("email_type", "introduction")  # introduction | follow_up
+    recipient_name = (data.get("recipient_name") or "").strip()
+    recipient_role = (data.get("recipient_role") or "").strip()
+    sender_name = (data.get("sender_name") or "").strip()
+    sender_firm = (data.get("sender_firm") or "").strip()
+    custom_notes = (data.get("custom_notes") or "").strip()
+
+    company = get_company(company_id) if company_id else None
+    related = get_related_articles(company["name"], company.get("ticker", ""), limit=3) if company else []
+
+    # Build context block
+    company_context = ""
+    if company:
+        company_context = f"""
+Company: {company['name']} ({company.get('ticker','')}:{company.get('exchange','')})
+Commodity: {company.get('commodity','')}
+Market Cap: {company.get('market_cap','')}
+Province: {company.get('province','')}
+Projects: {company.get('projects','')}
+Key Executives: {company.get('executives','')}
+Legal Counsel: {company.get('legal_counsel','Unknown')}
+"""
+    if related:
+        company_context += "\nRecent news about this company:\n"
+        for a in related:
+            company_context += f"- {a['title']} ({a['source']})\n"
+
+    type_instructions = {
+        "introduction": "Write a concise, professional cold outreach email introducing the sender as a mining M&A lawyer seeking to establish a relationship. Reference the company's specific projects or recent activity to show genuine research.",
+        "follow_up": "Write a warm, professional follow-up email referencing a prior conversation or outreach. Keep it brief — 3 paragraphs max. Include a clear call to action.",
+    }
+    instruction = type_instructions.get(email_type, type_instructions["introduction"])
+
+    prompt = f"""You are drafting a professional email on behalf of a Canadian mining M&A lawyer.
+
+Sender: {sender_name or 'the lawyer'}{f', {sender_firm}' if sender_firm else ''}
+Recipient: {recipient_name or 'the executive'}{f', {recipient_role}' if recipient_role else ''}
+Email type: {email_type.replace('_', ' ').title()}
+
+{company_context}
+
+Additional context from sender: {custom_notes or 'None'}
+
+{instruction}
+
+Rules:
+- Professional but not stiff — warm, direct tone
+- 3–4 short paragraphs max
+- Do NOT use generic filler phrases like "I hope this email finds you well"
+- Reference specific, real details from the company profile above
+- End with a clear, low-pressure call to action (brief call, coffee, etc.)
+- Output ONLY the email body (no subject line, no metadata)"""
+
+    try:
+        client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", ""))
+        message = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=600,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        email_body = message.content[0].text.strip()
+
+        # Generate subject line separately
+        subject_prompt = f"Write a concise email subject line (max 10 words) for a {email_type.replace('_',' ')} email from a mining M&A lawyer to {recipient_name or 'an executive'} at {company['name'] if company else 'a mining company'}. Output only the subject line text, no quotes."
+        subject_msg = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=50,
+            messages=[{"role": "user", "content": subject_prompt}],
+        )
+        subject = subject_msg.content[0].text.strip()
+
+        return jsonify({"ok": True, "subject": subject, "body": email_body})
+    except Exception as e:
+        logger.error("Email compose failed: %s", e)
+        return jsonify({"ok": False, "error": str(e)}), 500
 
 
 if __name__ == "__main__":

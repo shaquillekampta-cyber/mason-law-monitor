@@ -405,6 +405,135 @@
     border-radius: 7px; padding: 10px 14px; margin-bottom: 16px; line-height: 1.5;
   }
 
+  /* COMPANIES VIEW */
+  #companies-view { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+  #companies-view.visible { display: flex; }
+
+  .companies-topbar {
+    display: flex; align-items: center; gap: 12px; padding: 14px 24px;
+    background: var(--sidebar); border-bottom: 1px solid var(--border);
+  }
+  .companies-topbar h2 { font-size: 16px; font-weight: 700; color: var(--text); white-space: nowrap; }
+  .companies-search {
+    flex: 1; padding: 8px 12px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-size: 13px; outline: none;
+  }
+  .companies-search:focus { border-color: var(--accent); }
+  .companies-search::placeholder { color: var(--text-muted); }
+
+  #companies-grid {
+    flex: 1; overflow-y: auto; padding: 20px 24px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px;
+    align-content: start;
+  }
+
+  .company-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; cursor: pointer; transition: background 0.15s, border-color 0.15s;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .company-card:hover { background: var(--card-hover); border-color: #3a4660; }
+  .company-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .company-card-name { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.3; }
+  .company-card-ticker { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 4px; background: var(--tag-bg); color: var(--accent); white-space: nowrap; }
+  .company-card-commodity { font-size: 11px; color: var(--text-muted); }
+  .company-card-meta { display: flex; flex-wrap: wrap; gap: 6px; }
+  .company-meta-tag { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 4px; background: var(--border); color: var(--text-muted); }
+  .company-counsel { font-size: 11px; color: var(--text-muted); font-style: italic; }
+  .company-card-actions { display: flex; gap: 6px; margin-top: auto; }
+
+  /* COMPANY DETAIL MODAL */
+  #company-modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    z-index: 200; align-items: center; justify-content: center;
+  }
+  #company-modal-overlay.visible { display: flex; }
+  #company-modal {
+    background: #1a2235; border: 1px solid var(--border); border-radius: 12px;
+    width: 700px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+    display: flex; flex-direction: column;
+  }
+  .company-modal-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: #1a2235; z-index: 1;
+  }
+  .company-modal-title { font-size: 18px; font-weight: 700; color: var(--text); }
+  .company-modal-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+  .company-modal-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 20px; }
+  .company-modal-footer {
+    padding: 16px 24px; border-top: 1px solid var(--border);
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+
+  .detail-section { display: flex; flex-direction: column; gap: 6px; }
+  .detail-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text-muted); }
+  .detail-value { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .related-article-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+  }
+  .related-article-item:last-child { border-bottom: none; }
+  .related-article-item a { font-size: 12px; color: var(--accent); text-decoration: none; line-height: 1.4; }
+  .related-article-item a:hover { text-decoration: underline; }
+  .related-article-score { font-size: 10px; font-weight: 600; padding: 1px 5px; border-radius: 3px; flex-shrink: 0; margin-top: 2px; }
+
+  /* COMPANY EDIT MODAL */
+  #company-edit-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+    z-index: 250; align-items: center; justify-content: center;
+  }
+  #company-edit-overlay.visible { display: flex; }
+
+  /* EMAIL COMPOSER MODAL */
+  #email-modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+    z-index: 300; align-items: center; justify-content: center;
+  }
+  #email-modal-overlay.visible { display: flex; }
+  #email-modal {
+    background: #1a2235; border: 1px solid var(--border); border-radius: 12px;
+    width: 680px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+  }
+  .email-modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: #1a2235;
+  }
+  .email-modal-header h2 { font-size: 16px; font-weight: 700; color: var(--text); }
+  .email-modal-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .email-modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+
+  #email-output { display: none; flex-direction: column; gap: 12px; margin-top: 4px; }
+  #email-output.visible { display: flex; }
+  .email-subject-box {
+    padding: 10px 14px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 7px; font-size: 13px; font-weight: 600; color: var(--text);
+  }
+  .email-body-box {
+    padding: 14px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 7px; font-size: 13px; color: var(--text); line-height: 1.7;
+    white-space: pre-wrap; max-height: 320px; overflow-y: auto;
+  }
+  .copy-btn {
+    padding: 8px 16px; background: var(--high); border: none; border-radius: 7px;
+    color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .copy-btn:hover { opacity: 0.85; }
+  .generating-spinner {
+    display: none; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--text-muted); padding: 12px 0;
+  }
+  .generating-spinner.visible { display: flex; }
+  .generating-spinner::before {
+    content: ''; width: 16px; height: 16px; border: 2px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.8s linear infinite; flex-shrink: 0;
+  }
+
   /* ALERT BADGE */
   .alert-badge-row { display: flex; flex-wrap: wrap; gap: 4px; }
   .alert-badge {
@@ -469,6 +598,9 @@
     <button class="filter-btn" id="pipeline-nav-btn" onclick="showPipeline()">
       📋 Deal Pipeline <span class="count" id="count-pipeline">0</span>
     </button>
+    <button class="filter-btn" id="companies-nav-btn" onclick="showCompanies()">
+      🏢 Company Profiles <span class="count" id="count-companies">0</span>
+    </button>
   </div>
 
   <div class="score-filter">
@@ -494,6 +626,138 @@
     </button>
   </div>
 </nav>
+
+<!-- COMPANIES VIEW -->
+<div id="companies-view">
+  <div class="companies-topbar">
+    <h2>🏢 Company Profiles</h2>
+    <input class="companies-search" id="companies-search" type="text" placeholder="Search by name, exec, ticker, counsel…" oninput="debounceCompanySearch()" />
+    <button class="pipeline-add-btn" onclick="openCompanyEditModal(null)">+ Add Company</button>
+  </div>
+  <div id="companies-grid"></div>
+</div>
+
+<!-- COMPANY DETAIL MODAL -->
+<div id="company-modal-overlay" onclick="closeCompanyOnOverlay(event)">
+  <div id="company-modal">
+    <div class="company-modal-header">
+      <div>
+        <div class="company-modal-title" id="cm-title">—</div>
+        <div class="company-modal-subtitle" id="cm-subtitle">—</div>
+      </div>
+      <button class="modal-close" onclick="closeCompanyModal()">×</button>
+    </div>
+    <div class="company-modal-body">
+      <div class="detail-grid">
+        <div class="detail-section"><div class="detail-label">Market Cap</div><div class="detail-value" id="cm-mktcap">—</div></div>
+        <div class="detail-section"><div class="detail-label">Province</div><div class="detail-value" id="cm-province">—</div></div>
+        <div class="detail-section"><div class="detail-label">Commodity</div><div class="detail-value" id="cm-commodity">—</div></div>
+        <div class="detail-section"><div class="detail-label">Legal Counsel</div><div class="detail-value" id="cm-counsel">—</div></div>
+      </div>
+      <div class="detail-section"><div class="detail-label">Projects</div><div class="detail-value" id="cm-projects">—</div></div>
+      <div class="detail-section"><div class="detail-label">Key Executives</div><div class="detail-value" id="cm-executives">—</div></div>
+      <div class="detail-section"><div class="detail-label">Board Members</div><div class="detail-value" id="cm-board">—</div></div>
+      <div class="detail-section" id="cm-notes-section" style="display:none"><div class="detail-label">Notes</div><div class="detail-value" id="cm-notes">—</div></div>
+      <div class="detail-section">
+        <div class="detail-label">Related News</div>
+        <div id="cm-articles"><div style="font-size:12px;color:var(--text-muted);">No related articles found.</div></div>
+      </div>
+    </div>
+    <div class="company-modal-footer">
+      <button class="btn-secondary" onclick="closeCompanyModal()">Close</button>
+      <button class="btn-secondary" onclick="openCompanyEditModal(_currentCompanyId)">✏️ Edit</button>
+      <button class="btn-primary" onclick="openEmailComposer(_currentCompanyId)">✉️ Compose Email</button>
+      <button class="btn-primary" style="background:#22c55e;" onclick="addCompanyToPipeline(_currentCompanyId)">+ Pipeline</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMPANY EDIT MODAL -->
+<div id="company-edit-overlay" onclick="closeCompanyEditOnOverlay(event)">
+  <div id="pipeline-modal" style="width:600px;">
+    <div class="pipeline-modal-header">
+      <h2 id="company-edit-title">Add Company</h2>
+      <button class="modal-close" onclick="closeCompanyEditModal()">×</button>
+    </div>
+    <div class="pipeline-modal-body">
+      <div class="form-row">
+        <div class="form-group" style="flex:2"><label>Company Name *</label><input id="ce-name" type="text" /></div>
+        <div class="form-group"><label>Ticker</label><input id="ce-ticker" type="text" /></div>
+        <div class="form-group"><label>Exchange</label><input id="ce-exchange" type="text" placeholder="TSX/TSXV" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Market Cap</label><input id="ce-mktcap" type="text" placeholder="~$100M USD" /></div>
+        <div class="form-group"><label>Province</label><input id="ce-province" type="text" /></div>
+        <div class="form-group"><label>Commodity</label><input id="ce-commodity" type="text" /></div>
+      </div>
+      <div class="form-group"><label>Key Executives</label><textarea id="ce-executives" style="min-height:60px;"></textarea></div>
+      <div class="form-group"><label>Board Members</label><textarea id="ce-board" style="min-height:60px;"></textarea></div>
+      <div class="form-group"><label>Legal Counsel</label><input id="ce-counsel" type="text" /></div>
+      <div class="form-group"><label>Projects</label><textarea id="ce-projects" style="min-height:60px;"></textarea></div>
+      <div class="form-group"><label>Notes</label><textarea id="ce-notes"></textarea></div>
+      <input type="hidden" id="ce-company-id" value="" />
+    </div>
+    <div class="pipeline-modal-footer">
+      <button class="btn-danger" id="ce-delete-btn" style="display:none;margin-right:auto;" onclick="deleteCompanyFromEdit()">Delete</button>
+      <button class="btn-secondary" onclick="closeCompanyEditModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveCompany()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMAIL COMPOSER MODAL -->
+<div id="email-modal-overlay" onclick="closeEmailOnOverlay(event)">
+  <div id="email-modal">
+    <div class="email-modal-header">
+      <h2>✉️ AI Email Composer</h2>
+      <button class="modal-close" onclick="closeEmailModal()">×</button>
+    </div>
+    <div class="email-modal-body">
+      <div id="email-company-label" style="font-size:13px;font-weight:600;color:var(--accent);margin-bottom:4px;"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email Type</label>
+          <select id="em-type">
+            <option value="introduction">Introduction / Cold Outreach</option>
+            <option value="follow_up">Follow-up</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Recipient Name</label><input id="em-recipient-name" type="text" placeholder="e.g. John Smith" /></div>
+        <div class="form-group"><label>Recipient Role</label><input id="em-recipient-role" type="text" placeholder="e.g. CEO" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Your Name</label><input id="em-sender-name" type="text" placeholder="Your full name" /></div>
+        <div class="form-group"><label>Your Firm</label><input id="em-sender-firm" type="text" placeholder="Your law firm" /></div>
+      </div>
+      <div class="form-group">
+        <label>Additional Context (optional)</label>
+        <textarea id="em-notes" placeholder="Any specific angle, deal context, or talking points to include…" style="min-height:60px;"></textarea>
+      </div>
+      <div class="generating-spinner" id="email-spinner">Generating email with AI…</div>
+      <div id="email-output">
+        <div>
+          <div class="detail-label" style="margin-bottom:6px;">Subject</div>
+          <div class="email-subject-box" id="email-subject-out"></div>
+        </div>
+        <div>
+          <div class="detail-label" style="margin-bottom:6px;">Body</div>
+          <div class="email-body-box" id="email-body-out"></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="copy-btn" onclick="copyEmailToClipboard()">📋 Copy Full Email</button>
+          <button class="btn-secondary" onclick="regenerateEmail()">↻ Regenerate</button>
+        </div>
+      </div>
+      <input type="hidden" id="em-company-id" value="" />
+    </div>
+    <div class="email-modal-footer">
+      <button class="btn-secondary" onclick="closeEmailModal()">Close</button>
+      <button class="btn-primary" id="em-generate-btn" onclick="generateEmail()">Generate Email</button>
+    </div>
+  </div>
+</div>
 
 <!-- PIPELINE VIEW (sibling of main, shown/hidden) -->
 <div id="pipeline-view">
@@ -714,6 +978,12 @@
   let pipelineVisible = false;
   let _pipelineCompanies = [];
 
+  // Forward declarations — implementations further below
+  function hideCompanies() {
+    const v = document.getElementById('companies-view');
+    if (v) v.classList.remove('visible');
+  }
+
   function scoreClass(s) {
     if (s >= 7) return 'score-high';
     if (s >= 4) return 'score-medium';
@@ -922,6 +1192,8 @@
 
   function setArea(btn) {
     hidePipeline();
+    hideCompanies();
+    document.getElementById('main').style.display = '';
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentArea = btn.dataset.area;
@@ -1096,6 +1368,292 @@
     document.getElementById('wl-pattern').addEventListener('keydown', e => { if (e.key === 'Enter') addWatchlistEntry(); });
   });
 
+  // ── Companies ─────────────────────────────────────────────────────────────
+
+  let _currentCompanyId = null;
+  let _companySearchTimer = null;
+
+  function showCompanies() {
+    hidePipeline();
+    document.getElementById('main').style.display = 'none';
+    document.getElementById('pipeline-view').classList.remove('visible');
+    document.getElementById('companies-view').classList.add('visible');
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('companies-nav-btn').classList.add('active');
+    loadCompanies();
+  }
+
+  // hideCompanies defined at top-level above; called by setArea and showPipeline
+
+  function debounceCompanySearch() {
+    clearTimeout(_companySearchTimer);
+    _companySearchTimer = setTimeout(loadCompanies, 300);
+  }
+
+  async function loadCompanies() {
+    const search = document.getElementById('companies-search').value.trim();
+    const params = new URLSearchParams();
+    if (search) params.set('search', search);
+    const res = await fetch('/api/companies?' + params);
+    const companies = await res.json();
+    document.getElementById('count-companies').textContent = companies.length;
+    renderCompaniesGrid(companies);
+  }
+
+  function commodityColor(commodity) {
+    const c = (commodity || '').toLowerCase();
+    if (c.includes('gold')) return '#fbbf24';
+    if (c.includes('silver')) return '#94a3b8';
+    if (c.includes('copper')) return '#fb923c';
+    if (c.includes('lithium')) return '#a78bfa';
+    return '#8899b4';
+  }
+
+  function renderCompaniesGrid(companies) {
+    const grid = document.getElementById('companies-grid');
+    if (!companies.length) {
+      grid.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:20px;">No companies found.</div>';
+      return;
+    }
+    grid.innerHTML = companies.map(c => {
+      const execs = (c.executives || '').split(';')[0].trim();
+      const color = commodityColor(c.commodity);
+      return `<div class="company-card" onclick="openCompanyDetail(${c.id})">
+        <div class="company-card-top">
+          <div class="company-card-name">${escapeHtml(c.name)}</div>
+          <span class="company-card-ticker">${escapeHtml(c.ticker || '')}:${escapeHtml(c.exchange || '')}</span>
+        </div>
+        <div class="company-card-meta">
+          <span class="company-meta-tag" style="color:${color};">${escapeHtml(c.commodity || 'N/A')}</span>
+          ${c.market_cap ? `<span class="company-meta-tag">${escapeHtml(c.market_cap)}</span>` : ''}
+          ${c.province ? `<span class="company-meta-tag">${escapeHtml(c.province)}</span>` : ''}
+        </div>
+        ${execs ? `<div class="company-card-commodity">${escapeHtml(execs)}</div>` : ''}
+        ${c.legal_counsel ? `<div class="company-counsel">⚖️ ${escapeHtml(c.legal_counsel)}</div>` : ''}
+        <div class="company-card-actions">
+          <button class="action-btn" onclick="event.stopPropagation();openEmailComposer(${c.id})">✉️ Email</button>
+          <button class="action-btn" onclick="event.stopPropagation();addCompanyToPipelineById(${c.id}, ${JSON.stringify(escapeHtml(c.name))})">+ Pipeline</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function openCompanyDetail(companyId) {
+    _currentCompanyId = companyId;
+    const res = await fetch(`/api/companies/${companyId}`);
+    const c = await res.json();
+
+    document.getElementById('cm-title').textContent = c.name;
+    document.getElementById('cm-subtitle').textContent = `${c.ticker || ''}:${c.exchange || ''} · ${c.commodity || ''}`;
+    document.getElementById('cm-mktcap').textContent = c.market_cap || '—';
+    document.getElementById('cm-province').textContent = c.province || '—';
+    document.getElementById('cm-commodity').textContent = c.commodity || '—';
+    document.getElementById('cm-counsel').textContent = c.legal_counsel || '—';
+    document.getElementById('cm-projects').textContent = c.projects || '—';
+    document.getElementById('cm-executives').textContent = c.executives || '—';
+    document.getElementById('cm-board').textContent = c.board_members || '—';
+
+    const notesSection = document.getElementById('cm-notes-section');
+    if (c.notes) {
+      notesSection.style.display = '';
+      document.getElementById('cm-notes').textContent = c.notes;
+    } else {
+      notesSection.style.display = 'none';
+    }
+
+    const articlesEl = document.getElementById('cm-articles');
+    if (c.related_articles && c.related_articles.length) {
+      articlesEl.innerHTML = c.related_articles.map(a => {
+        const sc = scoreClass(a.relevance_score);
+        return `<div class="related-article-item">
+          <span class="related-article-score score-badge ${sc}" style="font-size:10px;padding:1px 6px;">${a.relevance_score.toFixed(1)}</span>
+          <a href="${escapeHtml(a.url)}" target="_blank" rel="noopener">${escapeHtml(a.title)}</a>
+        </div>`;
+      }).join('');
+    } else {
+      articlesEl.innerHTML = '<div style="font-size:12px;color:var(--text-muted);">No related articles found yet.</div>';
+    }
+
+    document.getElementById('company-modal-overlay').classList.add('visible');
+  }
+
+  function closeCompanyModal() {
+    document.getElementById('company-modal-overlay').classList.remove('visible');
+  }
+  function closeCompanyOnOverlay(e) {
+    if (e.target === document.getElementById('company-modal-overlay')) closeCompanyModal();
+  }
+
+  // Company Edit Modal
+  async function openCompanyEditModal(companyId) {
+    closeCompanyModal();
+    document.getElementById('ce-company-id').value = companyId || '';
+    document.getElementById('company-edit-title').textContent = companyId ? 'Edit Company' : 'Add Company';
+    document.getElementById('ce-delete-btn').style.display = companyId ? 'inline-block' : 'none';
+
+    if (companyId) {
+      const res = await fetch(`/api/companies/${companyId}`);
+      const c = await res.json();
+      document.getElementById('ce-name').value = c.name || '';
+      document.getElementById('ce-ticker').value = c.ticker || '';
+      document.getElementById('ce-exchange').value = c.exchange || '';
+      document.getElementById('ce-mktcap').value = c.market_cap || '';
+      document.getElementById('ce-province').value = c.province || '';
+      document.getElementById('ce-commodity').value = c.commodity || '';
+      document.getElementById('ce-executives').value = c.executives || '';
+      document.getElementById('ce-board').value = c.board_members || '';
+      document.getElementById('ce-counsel').value = c.legal_counsel || '';
+      document.getElementById('ce-projects').value = c.projects || '';
+      document.getElementById('ce-notes').value = c.notes || '';
+    } else {
+      ['ce-name','ce-ticker','ce-exchange','ce-mktcap','ce-province','ce-commodity','ce-executives','ce-board','ce-counsel','ce-projects','ce-notes'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+    }
+    document.getElementById('company-edit-overlay').classList.add('visible');
+    document.getElementById('ce-name').focus();
+  }
+
+  function closeCompanyEditModal() {
+    document.getElementById('company-edit-overlay').classList.remove('visible');
+  }
+  function closeCompanyEditOnOverlay(e) {
+    if (e.target === document.getElementById('company-edit-overlay')) closeCompanyEditModal();
+  }
+
+  async function saveCompany() {
+    const id = document.getElementById('ce-company-id').value;
+    const payload = {
+      name: document.getElementById('ce-name').value.trim(),
+      ticker: document.getElementById('ce-ticker').value.trim(),
+      exchange: document.getElementById('ce-exchange').value.trim(),
+      market_cap: document.getElementById('ce-mktcap').value.trim(),
+      province: document.getElementById('ce-province').value.trim(),
+      commodity: document.getElementById('ce-commodity').value.trim(),
+      executives: document.getElementById('ce-executives').value.trim(),
+      board_members: document.getElementById('ce-board').value.trim(),
+      legal_counsel: document.getElementById('ce-counsel').value.trim(),
+      projects: document.getElementById('ce-projects').value.trim(),
+      notes: document.getElementById('ce-notes').value.trim(),
+    };
+    if (!payload.name) { alert('Company name is required.'); return; }
+    const url = id ? `/api/companies/${id}` : '/api/companies';
+    const method = id ? 'PATCH' : 'POST';
+    await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    closeCompanyEditModal();
+    loadCompanies();
+  }
+
+  async function deleteCompanyFromEdit() {
+    const id = document.getElementById('ce-company-id').value;
+    if (!id || !confirm('Delete this company profile?')) return;
+    await fetch(`/api/companies/${id}`, { method: 'DELETE' });
+    closeCompanyEditModal();
+    loadCompanies();
+  }
+
+  function addCompanyToPipelineById(companyId, name) {
+    // Pre-fill pipeline modal with company name
+    document.getElementById('pm-company-id').value = '';
+    document.getElementById('pipeline-modal-title').textContent = 'Add Company';
+    document.getElementById('pm-delete-btn').style.display = 'none';
+    document.getElementById('pm-name').value = name;
+    ['pm-ticker','pm-exchange','pm-commodity','pm-deal-type','pm-deal-size','pm-contacts','pm-last-contact','pm-notes','pm-source-url'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('pm-stage').value = 'Identified';
+    closeCompanyModal();
+    document.getElementById('pipeline-modal-overlay').classList.add('visible');
+  }
+
+  function addCompanyToPipeline(companyId) {
+    const name = document.getElementById('cm-title').textContent;
+    addCompanyToPipelineById(companyId, name);
+  }
+
+  // ── Email Composer ────────────────────────────────────────────────────────
+
+  async function openEmailComposer(companyId) {
+    closeCompanyModal();
+    document.getElementById('em-company-id').value = companyId || '';
+    document.getElementById('email-output').classList.remove('visible');
+    document.getElementById('email-spinner').classList.remove('visible');
+    ['em-recipient-name','em-recipient-role','em-sender-name','em-sender-firm','em-notes'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('em-type').value = 'introduction';
+
+    if (companyId) {
+      const res = await fetch(`/api/companies/${companyId}`);
+      const c = await res.json();
+      document.getElementById('email-company-label').textContent = `Composing for: ${c.name} (${c.ticker}:${c.exchange})`;
+    } else {
+      document.getElementById('email-company-label').textContent = '';
+    }
+    document.getElementById('email-modal-overlay').classList.add('visible');
+    document.getElementById('em-recipient-name').focus();
+  }
+
+  function closeEmailModal() {
+    document.getElementById('email-modal-overlay').classList.remove('visible');
+  }
+  function closeEmailOnOverlay(e) {
+    if (e.target === document.getElementById('email-modal-overlay')) closeEmailModal();
+  }
+
+  async function generateEmail() {
+    const companyId = document.getElementById('em-company-id').value || null;
+    const payload = {
+      company_id: companyId ? parseInt(companyId) : null,
+      email_type: document.getElementById('em-type').value,
+      recipient_name: document.getElementById('em-recipient-name').value.trim(),
+      recipient_role: document.getElementById('em-recipient-role').value.trim(),
+      sender_name: document.getElementById('em-sender-name').value.trim(),
+      sender_firm: document.getElementById('em-sender-firm').value.trim(),
+      custom_notes: document.getElementById('em-notes').value.trim(),
+    };
+
+    document.getElementById('email-spinner').classList.add('visible');
+    document.getElementById('email-output').classList.remove('visible');
+    document.getElementById('em-generate-btn').disabled = true;
+
+    try {
+      const res = await fetch('/api/compose-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        document.getElementById('email-subject-out').textContent = data.subject;
+        document.getElementById('email-body-out').textContent = data.body;
+        document.getElementById('email-output').classList.add('visible');
+      } else {
+        alert('Failed to generate email: ' + (data.error || 'Unknown error'));
+      }
+    } catch (e) {
+      alert('Error: ' + e.message);
+    } finally {
+      document.getElementById('email-spinner').classList.remove('visible');
+      document.getElementById('em-generate-btn').disabled = false;
+    }
+  }
+
+  function regenerateEmail() {
+    generateEmail();
+  }
+
+  function copyEmailToClipboard() {
+    const subject = document.getElementById('email-subject-out').textContent;
+    const body = document.getElementById('email-body-out').textContent;
+    const full = `Subject: ${subject}\n\n${body}`;
+    navigator.clipboard.writeText(full).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => { btn.textContent = '📋 Copy Full Email'; }, 2000);
+    });
+  }
+
   // ── Alerts ────────────────────────────────────────────────────────────────
 
   async function loadAlerts() {
@@ -1173,6 +1731,7 @@
   };
 
   function showPipeline() {
+    hideCompanies();
     pipelineVisible = true;
     document.getElementById('main').style.display = 'none';
     document.getElementById('pipeline-view').classList.add('visible');
