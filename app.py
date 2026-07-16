@@ -206,12 +206,12 @@ def api_watchlist():
             a["watchlist_triggers"] = triggers
             result.append(a)
 
+    all_groups = ["company", "sector", "government", "australia", "africa", "europe", "south_america", "asia_pacific"]
+    keywords_by_group = {g: [kw["label"] for kw in watchlist if kw["group"] == g] for g in all_groups}
+
     return jsonify({
         "articles": result,
-        "keywords": {
-            "company": [kw["label"] for kw in watchlist if kw["group"] == "company"],
-            "sector":  [kw["label"] for kw in watchlist if kw["group"] == "sector"],
-        },
+        "keywords": keywords_by_group,
         "scraping": _scraping,
     })
 
