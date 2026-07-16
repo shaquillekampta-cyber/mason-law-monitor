@@ -214,17 +214,54 @@
   .wl-group-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
   .wl-group-label.company { color: #fbbf24; }
   .wl-group-label.sector { color: #38bdf8; }
+  .wl-group-label.government { color: #a78bfa; }
+  .wl-group-label.australia { color: #34d399; }
+  .wl-group-label.africa { color: #fb923c; }
+  .wl-group-label.europe { color: #60a5fa; }
+  .wl-group-label.south_america { color: #f472b6; }
+  .wl-group-label.asia_pacific { color: #facc15; }
   .wl-chip { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 4px; }
-  .wl-chip-company { background: rgba(245,158,11,0.1); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
-  .wl-chip-sector { background: rgba(56,189,248,0.08); color: #38bdf8; border: 1px solid rgba(56,189,248,0.2); }
+  .wl-chip-company    { background: rgba(245,158,11,0.1);  color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
+  .wl-chip-sector     { background: rgba(56,189,248,0.08); color: #38bdf8; border: 1px solid rgba(56,189,248,0.2); }
+  .wl-chip-government { background: rgba(167,139,250,0.1); color: #a78bfa; border: 1px solid rgba(167,139,250,0.25); }
+  .wl-chip-australia  { background: rgba(52,211,153,0.08); color: #34d399; border: 1px solid rgba(52,211,153,0.2); }
+  .wl-chip-africa     { background: rgba(251,146,60,0.1);  color: #fb923c; border: 1px solid rgba(251,146,60,0.25); }
+  .wl-chip-europe     { background: rgba(96,165,250,0.08); color: #60a5fa; border: 1px solid rgba(96,165,250,0.2); }
+  .wl-chip-south_america { background: rgba(244,114,182,0.08); color: #f472b6; border: 1px solid rgba(244,114,182,0.2); }
+  .wl-chip-asia_pacific  { background: rgba(250,204,21,0.08);  color: #facc15; border: 1px solid rgba(250,204,21,0.2); }
+
+  /* Watchlist geo tabs */
+  .wl-geo-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .wl-geo-tab {
+    padding: 4px 12px; border-radius: 16px; font-size: 11px; font-weight: 600; cursor: pointer;
+    background: var(--card); border: 1px solid var(--border); color: var(--text-muted);
+    transition: all 0.15s;
+  }
+  .wl-geo-tab:hover { border-color: var(--accent); color: var(--text); }
+  .wl-geo-tab.active { color: #fff; border-color: transparent; }
+  .wl-geo-tab[data-geo="all"].active      { background: #4b5563; }
+  .wl-geo-tab[data-geo="company"].active  { background: #b45309; }
+  .wl-geo-tab[data-geo="sector"].active   { background: #0369a1; }
+  .wl-geo-tab[data-geo="government"].active  { background: #6d28d9; }
+  .wl-geo-tab[data-geo="australia"].active   { background: #059669; }
+  .wl-geo-tab[data-geo="africa"].active      { background: #c2410c; }
+  .wl-geo-tab[data-geo="europe"].active      { background: #1d4ed8; }
+  .wl-geo-tab[data-geo="south_america"].active { background: #9d174d; }
+  .wl-geo-tab[data-geo="asia_pacific"].active  { background: #a16207; }
   .watchlist-trigger-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); letter-spacing: 0.2px; }
   .sector-trigger-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: rgba(56,189,248,0.08); color: #38bdf8; border: 1px solid rgba(56,189,248,0.2); letter-spacing: 0.2px; }
 
   .wl-section-header { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 10px 0 6px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
   .wl-section-header.wl-section-separator { margin-top: 16px; }
   .wl-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; }
-  .wl-section-header.company-header .wl-section-title { color: #fbbf24; }
-  .wl-section-header.sector-header .wl-section-title { color: #38bdf8; }
+  .wl-section-header.company-header .wl-section-title     { color: #fbbf24; }
+  .wl-section-header.sector-header .wl-section-title      { color: #38bdf8; }
+  .wl-section-header.government-header .wl-section-title  { color: #a78bfa; }
+  .wl-section-header.australia-header .wl-section-title   { color: #34d399; }
+  .wl-section-header.africa-header .wl-section-title      { color: #fb923c; }
+  .wl-section-header.europe-header .wl-section-title      { color: #60a5fa; }
+  .wl-section-header.south_america-header .wl-section-title { color: #f472b6; }
+  .wl-section-header.asia_pacific-header .wl-section-title  { color: #facc15; }
   .wl-section-count { font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 10px; background: var(--border); color: var(--text-muted); }
   .article-card.watchlist-hit { border-color: rgba(245,158,11,0.3); }
   .article-card.watchlist-hit:hover { border-color: rgba(245,158,11,0.5); }
@@ -865,14 +902,49 @@
     </div>
 
     <div id="watchlist-panel">
-      <div class="wl-panel-title">★ Mining Watchlist Keywords</div>
-      <div class="wl-group">
+      <div class="wl-panel-title">★ Mining Watchlist</div>
+      <div class="wl-geo-tabs">
+        <button class="wl-geo-tab active" data-geo="all"          onclick="setWlGeo(this)">All</button>
+        <button class="wl-geo-tab"        data-geo="company"      onclick="setWlGeo(this)">🏢 Companies</button>
+        <button class="wl-geo-tab"        data-geo="sector"       onclick="setWlGeo(this)">📊 Sector</button>
+        <button class="wl-geo-tab"        data-geo="government"   onclick="setWlGeo(this)">🏛 Government</button>
+        <button class="wl-geo-tab"        data-geo="australia"    onclick="setWlGeo(this)">🇦🇺 Australia</button>
+        <button class="wl-geo-tab"        data-geo="africa"       onclick="setWlGeo(this)">🌍 Africa</button>
+        <button class="wl-geo-tab"        data-geo="europe"       onclick="setWlGeo(this)">🇪🇺 Europe</button>
+        <button class="wl-geo-tab"        data-geo="south_america" onclick="setWlGeo(this)">🌎 South America</button>
+        <button class="wl-geo-tab"        data-geo="asia_pacific" onclick="setWlGeo(this)">🌏 Asia Pacific</button>
+      </div>
+      <div class="wl-group" id="wl-chips-company">
         <div class="wl-group-label company">Target Companies</div>
         <div class="wl-chips" id="watchlist-company-chips"></div>
       </div>
-      <div class="wl-group">
-        <div class="wl-group-label sector">Sector News</div>
+      <div class="wl-group" id="wl-chips-sector">
+        <div class="wl-group-label sector">Sector / Deal Type</div>
         <div class="wl-chips" id="watchlist-sector-chips"></div>
+      </div>
+      <div class="wl-group" id="wl-chips-government">
+        <div class="wl-group-label government">Government &amp; Agency</div>
+        <div class="wl-chips" id="watchlist-government-chips"></div>
+      </div>
+      <div class="wl-group" id="wl-chips-australia">
+        <div class="wl-group-label australia">Australia</div>
+        <div class="wl-chips" id="watchlist-australia-chips"></div>
+      </div>
+      <div class="wl-group" id="wl-chips-africa">
+        <div class="wl-group-label africa">Africa</div>
+        <div class="wl-chips" id="watchlist-africa-chips"></div>
+      </div>
+      <div class="wl-group" id="wl-chips-europe">
+        <div class="wl-group-label europe">Europe</div>
+        <div class="wl-chips" id="watchlist-europe-chips"></div>
+      </div>
+      <div class="wl-group" id="wl-chips-south_america">
+        <div class="wl-group-label south_america">South America</div>
+        <div class="wl-chips" id="watchlist-south_america-chips"></div>
+      </div>
+      <div class="wl-group" id="wl-chips-asia_pacific">
+        <div class="wl-group-label asia_pacific">Asia Pacific</div>
+        <div class="wl-chips" id="watchlist-asia_pacific-chips"></div>
       </div>
     </div>
 
@@ -932,6 +1004,12 @@
           <select id="wl-group">
             <option value="company">Company</option>
             <option value="sector">Sector</option>
+            <option value="government">Government</option>
+            <option value="australia">Australia</option>
+            <option value="africa">Africa</option>
+            <option value="europe">Europe</option>
+            <option value="south_america">South America</option>
+            <option value="asia_pacific">Asia Pacific</option>
           </select>
           <button onclick="addWatchlistEntry()">+ Add</button>
         </div>
@@ -988,6 +1066,65 @@
     if (s >= 7) return 'score-high';
     if (s >= 4) return 'score-medium';
     return 'score-low';
+  }
+
+  // ── Watchlist geo tab state & helpers ──────────────────────────────────────
+  const WL_GEO_GROUPS = ['company','sector','government','australia','africa','europe','south_america','asia_pacific'];
+  const WL_GEO_LABELS = {
+    all: 'All', company: 'Target Companies', sector: 'Sector / Deal Type',
+    government: 'Government & Agency', australia: 'Australia', africa: 'Africa',
+    europe: 'Europe', south_america: 'South America', asia_pacific: 'Asia Pacific',
+  };
+  let currentWlGeo = 'all';
+
+  function setWlGeo(btn) {
+    document.querySelectorAll('.wl-geo-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentWlGeo = btn.dataset.geo;
+    applyWlGeoFilter();
+    // re-render articles if watchlist is active
+    if (currentArea === '__watchlist__') loadArticles();
+  }
+
+  function applyWlGeoFilter() {
+    WL_GEO_GROUPS.forEach(g => {
+      const block = document.getElementById(`wl-chips-${g}`);
+      if (!block) return;
+      const visible = currentWlGeo === 'all' || currentWlGeo === g;
+      block.style.display = visible ? '' : 'none';
+    });
+  }
+
+  function renderWatchlistArticles(articles) {
+    const geo = currentWlGeo;
+    // filter articles to matching group(s)
+    let filtered = articles;
+    if (geo !== 'all') {
+      filtered = articles.filter(a => a.watchlist_triggers.some(t => t.group === geo));
+    }
+
+    if (geo === 'all') {
+      // group by first-priority group: company > government > sector > geo regions
+      const priority = ['company','government','sector','australia','africa','europe','south_america','asia_pacific'];
+      let html = '';
+      let first = true;
+      priority.forEach(g => {
+        const hits = articles.filter(a => a.watchlist_triggers.some(t => t.group === g));
+        if (!hits.length) return;
+        html += `<div class="wl-section-header ${g}-header${!first ? ' wl-section-separator' : ''}">
+          <span class="wl-section-title">${WL_GEO_LABELS[g]}</span>
+          <span class="wl-section-count">${hits.length}</span>
+        </div>${hits.map(renderArticle).join('')}`;
+        first = false;
+      });
+      return html || '';
+    } else {
+      if (!filtered.length) return '';
+      return `<div class="wl-section-header ${geo}-header">
+        <span class="wl-section-title">${WL_GEO_LABELS[geo]}</span>
+        <span class="wl-section-count">${filtered.length}</span>
+      </div>${filtered.map(renderArticle).join('')}`;
+    }
   }
 
   function formatDate(iso) {
@@ -1108,22 +1245,7 @@
       const empty = document.getElementById('empty-state');
 
       if (isWatchlist) {
-        const companyHits = articles.filter(a => a.watchlist_triggers.some(t => t.group === 'company'));
-        const sectorOnly  = articles.filter(a => a.watchlist_triggers.every(t => t.group === 'sector'));
-        let html = '';
-        if (companyHits.length) {
-          html += `<div class="wl-section-header company-header">
-            <span class="wl-section-title">Target Companies</span>
-            <span class="wl-section-count">${companyHits.length}</span>
-          </div>${companyHits.map(renderArticle).join('')}`;
-        }
-        if (sectorOnly.length) {
-          html += `<div class="wl-section-header sector-header${companyHits.length ? ' wl-section-separator' : ''}">
-            <span class="wl-section-title">Sector News</span>
-            <span class="wl-section-count">${sectorOnly.length}</span>
-          </div>${sectorOnly.map(renderArticle).join('')}`;
-        }
-        container.innerHTML = html;
+        container.innerHTML = renderWatchlistArticles(articles);
       } else {
         container.innerHTML = articles.map(renderArticle).join('');
       }
@@ -1133,10 +1255,19 @@
       empty.classList.toggle('visible', articles.length === 0);
 
       if (isWatchlist && data.keywords) {
-        document.getElementById('watchlist-company-chips').innerHTML =
-          data.keywords.company.map(k => `<span class="wl-chip wl-chip-company">${escapeHtml(k)}</span>`).join('');
-        document.getElementById('watchlist-sector-chips').innerHTML =
-          data.keywords.sector.map(k => `<span class="wl-chip wl-chip-sector">${escapeHtml(k)}</span>`).join('');
+        const ALL_GEO_GROUPS = ['company','sector','government','australia','africa','europe','south_america','asia_pacific'];
+        ALL_GEO_GROUPS.forEach(g => {
+          const el = document.getElementById(`watchlist-${g}-chips`);
+          if (el && data.keywords[g]) {
+            el.innerHTML = (data.keywords[g] || []).map(k =>
+              `<span class="wl-chip wl-chip-${g}">${escapeHtml(k)}</span>`).join('');
+          }
+          // show/hide chip group blocks
+          const block = document.getElementById(`wl-chips-${g}`);
+          if (block) block.style.display = (data.keywords[g] && data.keywords[g].length) ? '' : 'none';
+        });
+        // apply current geo filter to chip blocks
+        applyWlGeoFilter();
       }
 
       if (data.last_fetch) document.getElementById('last-fetch').textContent = formatDate(data.last_fetch);
